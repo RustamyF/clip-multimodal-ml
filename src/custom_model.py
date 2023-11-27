@@ -3,8 +3,8 @@ import torch.nn.functional as F
 from torchvision import models
 import torch
 from transformers import AutoModel, AutoTokenizer, BertTokenizer
-from config import EMBED_DIM, TRANSFORMER_EMBED_DIM, MAX_LEN, TEXT_MODEL
-from model_loss import clip_loss, metrics
+from .config import EMBED_DIM, TRANSFORMER_EMBED_DIM, MAX_LEN, TEXT_MODEL
+from .model_loss import clip_loss, metrics
 
 
 class Projection(nn.Module):
