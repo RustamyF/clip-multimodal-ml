@@ -3,8 +3,8 @@ import torch.nn.functional as F
 from torchvision import models
 import torch
 from transformers import AutoModel, AutoTokenizer, BertTokenizer
-from .config import EMBED_DIM, TRANSFORMER_EMBED_DIM, MAX_LEN, TEXT_MODEL
-from .model_loss import clip_loss, metrics
+from .config import Config
+from .model_loss import CLIP_loss, metrics
 
 
 class Projection(nn.Module):
@@ -42,8 +42,8 @@ class VisionEncoder(nn.Module):
 class TextEncoder(nn.Module):
     def __init__(self, d_out: int) -> None:
         super().__init__()
-        self.base = AutoModel.from_pretrained(TEXT_MODEL)
-        self.projection = Projection(TRANSFORMER_EMBED_DIM, d_out)
+        self.base = AutoModel.from_pretrained(Config.text_model)
+        self.projection = Projection(Config.transformer_embed_dim, d_out)
         for p in self.base.parameters():
             p.requires_grad = False
 
@@ -58,25 +58,21 @@ class TextEncoder(nn.Module):
 class CustomModel(nn.Module):
     def __init__(self, lr: float = 1e-3) -> None:
         super().__init__()
-        self.vision_encoder = VisionEncoder(EMBED_DIM)
-        self.caption_encoder = TextEncoder(EMBED_DIM)
-        self.tokenizer = Tokenizer(AutoTokenizer.from_pretrained(TEXT_MODEL))
+        self.vision_encoder = VisionEncoder(Config.embed_dim)
+        self.caption_encoder = TextEncoder(Config.embed_dim)
+        self.tokenizer = Tokenizer(AutoTokenizer.from_pretrained(Config.text_model))
         self.lr = lr
 
-    def common_step(self, batch):
-        images, text = batch
+    def forward(self, images, text):
         text = self.tokenizer(text).to(device)
 
         image_embed = self.vision_encoder(images)
         caption_embed = self.caption_encoder(text["input_ids"])
         similarity = caption_embed @ image_embed.T
 
-        loss = clip_loss(similarity)
+        loss = CLIP_loss(similarity)
         img_acc, cap_acc = metrics(similarity)
         return loss, img_acc, cap_acc
-
-    def forward(self, images, text):
-        return self.common_step((images, text))
 
 
 class Tokenizer:
@@ -85,13 +81,9 @@ class Tokenizer:
 
     def __call__(self, x: str) -> AutoTokenizer:
         return self.tokenizer(
-            x, max_length=MAX_LEN, truncation=True, padding=True, return_tensors="pt"
+            x,
+            max_length=Config.max_len,
+            truncation=True,
+            padding=True,
+            return_tensors="pt",
         )
-
-    def decode(self, x):
-        return [
-            self.tokenizer.decode(sentence[:sentence_len])
-            for sentence, sentence_len in zip(
-                x["input_ids"], target["attention_mask"].sum(axis=-1)
-            )
-        ]
