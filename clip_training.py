@@ -1,33 +1,27 @@
 import torch
 import os
 import torch
+import subprocess
 from torch.utils.data import DataLoader
-from torchvision import transforms
 from src.custom_model import CustomModel
-from src.clip_dl import CLIPDataset
-from src.config import BATCH_SIZE
+from src.clip_dl import CocoDataset, Flickr30kDataset
+from src.config import Config
 
-# Define the transformation for the images
-transform = transforms.Compose(
-    [
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-    ]
-)
-
-root_dir = "datasets"
-annotations_dir = os.path.join(root_dir, "annotations")
-annotation_file = os.path.join(
-    annotations_dir, "annotations", "captions_train2017.json"
-)
+coco_dataset = False
 # Create the CLIP dataset
-clip_dataset = CLIPDataset(
-    root_dir="datasets", annotation_file=annotation_file, transform=transform
-)
+if coco_dataset:
+    if not "datasets" in os.listdir():
+        print("coco dataset is not downloaded! running the downloading script ....")
+        subprocess.run(["python", "download_coco_data.py"])
+
+    clip_dataset = CocoDataset(root_dir="datasets")
+else:
+    clip_dataset = Flickr30kDataset()
+
 
 # Create the DataLoader
 clip_dataloader = DataLoader(
-    clip_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4
+    clip_dataset, batch_size=Config.batch_size, shuffle=True, num_workers=4
 )
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -53,7 +47,7 @@ for epoch in range(num_epochs):
         image = batch["image"].to(device)
         text = batch["caption"]
         # images, text = batch
-        loss, img_acc, cap_acc = model.common_step((image, text))
+        loss, img_acc, cap_acc = model(image, text)
 
         # Backward pass and optimization
         optimizer.zero_grad()
