@@ -62,9 +62,10 @@ class CustomModel(nn.Module):
         self.caption_encoder = TextEncoder(Config.embed_dim)
         self.tokenizer = Tokenizer(AutoTokenizer.from_pretrained(Config.text_model))
         self.lr = lr
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     def forward(self, images, text):
-        text = self.tokenizer(text).to(device)
+        text = self.tokenizer(text).to(self.device)
 
         image_embed = self.vision_encoder(images)
         caption_embed = self.caption_encoder(text["input_ids"])

@@ -1,14 +1,19 @@
 import torch
 import os
 import torch
+import subprocess
 from torch.utils.data import DataLoader
 from src.custom_model import CustomModel
 from src.clip_dl import CocoDataset, Flickr30kDataset
 from src.config import Config
 
-coco_dataset = True
+coco_dataset = False
 # Create the CLIP dataset
 if coco_dataset:
+    if not "datasets" in os.listdir():
+        print("coco dataset is not downloaded! running the downloading script ....")
+        subprocess.run(["python", "download_coco_data.py"])
+
     clip_dataset = CocoDataset(root_dir="datasets")
 else:
     clip_dataset = Flickr30kDataset()
@@ -42,7 +47,7 @@ for epoch in range(num_epochs):
         image = batch["image"].to(device)
         text = batch["caption"]
         # images, text = batch
-        loss, img_acc, cap_acc = model.common_step((image, text))
+        loss, img_acc, cap_acc = model(image, text)
 
         # Backward pass and optimization
         optimizer.zero_grad()
