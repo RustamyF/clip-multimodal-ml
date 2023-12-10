@@ -2,15 +2,35 @@ import torch.nn.functional as F
 import torch
 
 
-def contrastive_loss(logits, dim):
-    neg_ce = torch.diag(F.log_softmax(logits, dim=dim))
-    return -neg_ce.mean()
+def CLIP_loss(logits: torch.Tensor) -> torch.Tensor:
+    """
+    Calculate a custom cross-entropy loss.
 
+    Args:
+    - logits (torch.Tensor): The input tensor containing unnormalized logits.
 
-def clip_loss(similarity: torch.Tensor) -> torch.Tensor:
-    caption_loss = contrastive_loss(similarity, dim=0)
-    image_loss = contrastive_loss(similarity, dim=1)
-    return (caption_loss + image_loss) / 2.0
+    Returns:
+    - torch.Tensor: The computed custom cross-entropy loss.
+
+    Example:
+    >>> logits = torch.rand((batch_size, num_classes))
+    >>> loss = CLIP_loss(logits)
+    """
+
+    # Assuming n is the number of classes
+    n = logits.shape[1]
+
+    # Create labels tensor
+    labels = torch.arange(n)
+
+    # Calculate cross entropy losses along axis 0 and 1
+    loss_i = F.cross_entropy(logits.transpose(0, 1), labels, reduction="mean")
+    loss_t = F.cross_entropy(logits, labels, reduction="mean")
+
+    # Calculate the final loss
+    loss = (loss_i + loss_t) / 2
+
+    return loss
 
 
 def metrics(similarity: torch.Tensor):
@@ -22,3 +42,9 @@ def metrics(similarity: torch.Tensor):
     cap_acc = (cap2img_match_idx == y).float().mean()
 
     return img_acc, cap_acc
+
+
+# Example usage
+# logits = torch.rand(8, 8)  # Simulated logits
+# loss = CLIP_loss(logits)
+# print(f"Contrastive loss: {loss}")

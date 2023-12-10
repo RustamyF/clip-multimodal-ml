@@ -1,7 +1,15 @@
-EMBED_DIM = 512
-TRANSFORMER_EMBED_DIM = 768
-MAX_LEN = 32  # Maximum length of text
-TEXT_MODEL = "distilbert-base-multilingual-cased"
+from dataclasses import dataclass
 
-EPOCHS = 5
-BATCH_SIZE = 64
+
+@dataclass
+class Config:
+    """
+    Configuration class for the CLIP training script.
+    """
+
+    embed_dim: int = 512  # Embedding dimension
+    transformer_embed_dim: int = 768  # Transformer embedding dimension
+    max_len: int = 32  # Maximum text length
+    text_model: str = "distilbert-base-multilingual-cased"  # Text model name
+    epochs: int = 5  # Number of training epochs
+    batch_size: int = 64  # Batch size
