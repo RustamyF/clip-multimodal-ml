@@ -12,7 +12,7 @@ coco_dataset = False
 if coco_dataset:
     if not "datasets" in os.listdir():
         print("coco dataset is not downloaded! running the downloading script ....")
-        subprocess.run(["python", "download_coco_data.py"])
+        subprocess.run(["python", "src/download_coco_data.py"])
 
     clip_dataset = CocoDataset(root_dir="datasets")
 else:
