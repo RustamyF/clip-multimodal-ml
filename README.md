@@ -9,4 +9,4 @@ To run the training pipeline for CLIP, run the following command:
 ```python
 python clip_training.py
 ```
-by default, the training will use fliker30k dataset. For training on COCO dataset, change the `coco_dataset = False` to True in the `clip_training.py file`.
+by default, the training will use fliker30k dataset. For training on COCO dataset, change the `coco_dataset = False` to `coco_dataset = True` in the `clip_training.py` file.
