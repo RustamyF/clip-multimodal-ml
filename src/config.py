@@ -12,4 +12,4 @@ class Config:
     max_len: int = 32  # Maximum text length
     text_model: str = "distilbert-base-multilingual-cased"  # Text model name
     epochs: int = 5  # Number of training epochs
-    batch_size: int = 64  # Batch size
+    batch_size: int = 128  # Batch size
