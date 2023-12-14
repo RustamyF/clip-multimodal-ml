@@ -17,11 +17,13 @@ def CLIP_loss(logits: torch.Tensor) -> torch.Tensor:
     >>> loss = CLIP_loss(logits)
     """
 
-    # Assuming n is the number of classes
     n = logits.shape[1]
 
     # Create labels tensor
     labels = torch.arange(n)
+
+    # bring logits to cpu
+    logits = logits.to("cpu")
 
     # Calculate cross entropy losses along axis 0 and 1
     loss_i = F.cross_entropy(logits.transpose(0, 1), labels, reduction="mean")

@@ -60,7 +60,9 @@ class CustomModel(nn.Module):
         super().__init__()
         self.vision_encoder = VisionEncoder(Config.embed_dim)
         self.caption_encoder = TextEncoder(Config.embed_dim)
-        self.tokenizer = Tokenizer(AutoTokenizer.from_pretrained(Config.text_model))
+        self.tokenizer = Tokenizer(
+            AutoTokenizer.from_pretrained(Config.text_model), use_fast=False
+        )
         self.lr = lr
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
